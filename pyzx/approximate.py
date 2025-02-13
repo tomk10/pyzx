@@ -417,6 +417,7 @@ def two_qubit_basic_anneal(g: zx.graph.graph_s.GraphS, err_budget: float, max_it
             if tq < tq_best:
                 tq_best = tq
                 total_err += norm_err
+                best_vertex_flip = vertex_flip.copy()
             else:
                 vertex_flip[v] = not vertex_flip[v]
         else:
