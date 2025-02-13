@@ -404,6 +404,23 @@ def two_qubit_basic_anneal(g: zx.graph.graph_s.GraphS, err_budget: float, max_it
     # Set the number of iterations we can have without a change to be equal to the number of changable vertices
     freeze_out_max = len(vertex_list) * 5
     epoch = len(vertex_list) 
+
+    sorted_vertex_list = sorted(rounded_phase_dict, key=lambda x: round_error_dict[x])
+    for v in sorted_vertex_list:
+        norm_err = 2*abs(math.sin(np.pi * round_error_dict[v]/2))
+        if total_err + norm_err < err_budget:
+            vertex_flip[v] = not vertex_flip[v]
+            g_test = g.clone()
+            graph_rounder(g_test, vertex_flip, vertex_list, rounded_phase_dict)
+            basic_simp_fast(g_test)
+            tq = two_qubit_gate_count(g_test)
+            if tq < tq_best:
+                tq_best = tq
+                total_err += norm_err
+            else:
+                vertex_flip[v] = not vertex_flip[v]
+        else:
+            break
     
     while (total_err <= err_budget) and (iter<=max_iter) and freeze_out_counter <= freeze_out_max and tq !=0: # while error is within budget, max-iterations is not surpassed and we have not frozen
         iter_at_temp = 1
